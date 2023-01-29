@@ -114,7 +114,7 @@ summary(m.cor)
 cov_b1b2<-meta3*sqrt(meta1$`Overall variance`*meta2$`Overall variance`)
 cov_b1b2
 
-#plot figure1 
+#plot figure 3 
 age<-seq(50,90,1)
 HR<-exp(meta1$`Overal beta`+meta2$`Overal beta`*age)
 HR_low<-exp((meta1$`Overal beta`+meta2$`Overal beta`*age)-1.96*sqrt(meta1$`Overall variance`+age^2*meta2$`Overall variance`+2*age*cov_b1b2))
@@ -131,7 +131,7 @@ model<-mvmeta(cbind(sim_data$b1,sim_data$b2),S,method="ml")
 summary(model)
 model$vcov
 
-# figure 2
+# figure 4
 
 cov<-model$vcov[1,2]
 beta<-model$coefficients
