@@ -42,6 +42,19 @@ random_b1
 # $`Overall variance`
 # [1] 0.7308388
 
+library(meta)
+b1.meta<- metagen(TE = b1,
+                seTE = sqrt(var_b1),
+                studlab = LETTERS[1:10],
+                data = ,
+                sm = "",
+                method.tau = "DL",
+                fixed = TRUE,
+                random = TRUE,
+                title = "Use R meta package")
+
+summary(b1.meta)
+forest(b1.meta)
 #################beta 2
 
 b2 <- studies$b2  # beta2 from the 10 cohorts
@@ -63,6 +76,19 @@ random_b2
 # $`Overall variance`
 # [1] 0.0001403961
 
+
+b2.meta<- metagen(TE = b2,
+                  seTE = sqrt(var_b2),
+                  studlab = LETTERS[1:10],
+                  data = ,
+                  sm = "",
+                  method.tau = "DL",
+                  fixed = TRUE,
+                  random = TRUE,
+                  title = "Use R meta package")
+
+summary(b2.meta)
+forest(b2.meta)
 
 ###meta analysis on r
 
@@ -104,6 +130,16 @@ random_meta_r<-random_effect_meta_r(v1,v2,v12,sample_size)
 random_meta_r
 #[1] -0.9493409
 
+r.meta <- metacor(cor = r, 
+                 n = sample_size,
+                 studlab = LETTERS[1:10],
+                 data = ,
+                 fixed = TRUE,
+                 random = TRUE,
+                 method.tau = "DL",
+                 hakn = FALSE,
+                 title = "Use R meta package")
+summary(r.meta)
 
 ####plot
 
