@@ -196,6 +196,104 @@ p3
 
 #ggsave(filename = "E:\\cov_paper\\covmeta.jpeg",p3,units="mm", width = 250, height = 100,device='jpeg', dpi = 300)
 
+#multivariate meta-analysis
+
+library (mvmeta) 
+library (dplyr)
+S <-as.matrix(select(studies ,var_b1 , cov_b1b2 , var_b2)) 
+model <- mvmeta (cbind ( studies$b1,studies $b2),S, method ="ml")
+summary(model)
+
+# Call:  mvmeta(formula = cbind(studies$b1, studies$b2) ~ 1, S = S, method = "ml")
+# 
+# Multivariate random-effects meta-analysis
+# Dimension: 2
+# Estimation method: ML
+# 
+# Fixed-effects coefficients
+# Estimate  Std. Error        z  Pr(>|z|)  95%ci.lb  95%ci.ub   
+# y1    1.1642      0.7770   1.4982    0.1341   -0.3588    2.6871   
+# y2   -0.0193      0.0128  -1.5060    0.1321   -0.0445    0.0058   
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+# 
+# Between-study random-effects (co)variance components
+# Structure: General positive-definite
+# Std. Dev  Corr
+# y1    0.8462    y1
+# y2    0.0201     1
+# 
+# Multivariate Cochran Q-test for heterogeneity:
+#   Q = 77.9106 (df = 18), p-value = 0.0000
+# I-square statistic = 76.9%
+# 
+# 10 studies, 20 observations, 2 fixed and 3 random-effects parameters
+# logLik      AIC      BIC  
+# -5.0854  20.1708  25.1495  
+
+model$vcov
+
+# y1.(Intercept) y2.(Intercept)
+# y1.(Intercept)    0.603797649  -0.0058182353
+# y2.(Intercept)   -0.005818235   0.0001650336
+
+b1_m<-model$coefficients[1,1]
+b1_m
+b2_m<-model$coefficients[1,2]
+b2_m
+v1_m<-model$vcov[1,1]
+v1_m
+v2_m<-model$vcov[2,2]
+v2_m
+cov_m<-model$vcov[1,2]
+cov_m
+
+plot_with_multivariate <- function(age, b1, v1, b2, v2, r, b1_m, v1_m, b2_m,V2_m,cov_m) {
+  cov_b1b2 <- r * sqrt(v1 * v2)
+  RR <- exp(b1 + b2 * age)
+  RR_lower <- exp((b1 + b2 * age) - 1.96 * sqrt(v1 + age^2 * v2 + 2 * age * cov_b1b2))
+  RR_upper <- exp((b1 + b2 * age) + 1.96 * sqrt(v1 + age^2 * v2 + 2 * age * cov_b1b2))
+  
+  RR_m <- exp(b1_m + b2_m * age)
+  RR_lower_m <- exp((b1_m + b2_m * age) - 1.96 * sqrt(v1_m + age^2 * v2_m + 2 * age * cov_m))
+  RR_upper_m <- exp((b1_m + b2_m * age) + 1.96 * sqrt(v1_m + age^2 * v2_m + 2 * age * cov_m))
+  
+  
+  ndata <- as.data.frame(cbind(RR, RR_lower, RR_upper, RR_m, RR_lower_m, RR_upper_m, age))
+  ggplot(data = ndata, aes(x = age)) +
+    geom_line(aes(y = RR, color="Correlation coefficient method")) +
+    geom_line(aes(y = RR_lower,color = "Correlation coefficient method"), linetype = "dashed") +
+    geom_line(aes(y = RR_upper,color = "Correlation coefficient method"),, linetype = "dashed") +
+    
+    geom_line(aes(y = RR_m,color="Multivariate meta-analysis")) +
+    geom_line(aes(y = RR_lower_m, color = "Multivariate meta-analysis"), linetype = "longdash") +
+    geom_line(aes(y = RR_upper_m, color = "Multivariate meta-analysis"), linetype = "longdash") +
+    
+    scale_y_continuous(name = "Rate Ratio (RR): Fallers vs. Non-Fallers",
+                       limits = c(0, 5), expand = c(0, 0)) +
+    scale_color_manual(values = c("red", "blue"))+
+    guides(color = guide_legend(title = "Methods"))+
+    
+    theme_bw() +
+    theme(axis.line = element_line(color = 'black'),
+          axis.title.y = element_text(size = 8),
+          axis.title.x = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_text(size = 8),
+          plot.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank())
+  
+}
+
+p4<-plot_with_multivariate(age, b1, v1, b2, v2, r,b1_m, v1_m, b2_m, v2_m, cov_m)
+p4
+
+#ggsave(filename = "E:\\cov_paper\\multivariate.jpeg",p4,units="mm", width = 250, height = 100,device='jpeg', dpi = 300)
+
+
+
 ###### use the package
 library(devtools)
 install_github("enwuliu/covmeta")
